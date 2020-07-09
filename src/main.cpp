@@ -1,20 +1,70 @@
+#ifdef __cplusplus
+
 #include <iostream>
+
+/** Freertos Headers */
+#include "esp_system.h"
+#include "nvs_flash.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
+
+/**  ESP32 Headers */
+#include "driver/gpio.h"
+
+// Led
+#define GPIO_LED_PIN GPIO_NUM_2
+// Pump
+#define GPIO_PUMP_PIN GPIO_NUM_12
+// Mask for the outputs
+#define GPIO_OUTPUT_PIN_SEL_MASK ((1ULL << GPIO_LED_PIN) | (1ULL << GPIO_PUMP_PIN))
+
+
 
 using namespace std;
 
-#ifdef __cplusplus
+int iot_plant_gpio_init(){
+    /** Configure OUTPUTS */
+    // Variable to configure the GPIO
+    gpio_config_t io_conf = {
+        .pin_bit_mask   = GPIO_OUTPUT_PIN_SEL_MASK, // Bit mask of the pins that you want to set,e.g.GPIO18/19
+        .mode           = GPIO_MODE_OUTPUT,         // Set as output
+        .pull_up_en     = GPIO_PULLUP_DISABLE,      // Disable pull-up mode
+        .pull_down_en   = GPIO_PULLDOWN_DISABLE,    // Disable pull-down mode
+        .intr_type      = GPIO_INTR_DISABLE,        // Disable interrupt
+    };
+    // Configure GPIO with the given settings
+    gpio_config(&io_conf);
+
+    /** Configure INPUTS */
+    // TODO
+
+    return 0;
+}
+
+static void gpio_task_example(void* arg){
+    bool flag = false;
+    while(1)
+    {
+        flag = !flag;
+        gpio_set_level(GPIO_LED_PIN, flag);
+        gpio_set_level(GPIO_PUMP_PIN, flag);
+        cout << "flag = " << flag << endl;
+        // Delay 1 second
+        vTaskDelay(1000 / portTICK_RATE_MS);
+    }
+    vTaskDelete(NULL);
+}
+
 extern "C"
 {
-#endif
-
     void app_main(void)
     {
-        while(1)
-        {
-            cout << "Hello world" << endl;
-        }
+        // This API initialises the default NVS partition. The default NVS partition is the one that is labeled “nvs” in the partition table.
+        nvs_flash_init();
+        iot_plant_gpio_init();
+        xTaskCreate(&gpio_task_example, "GPIO Task Example", 1024, NULL, 5, NULL);
     }
-
-#ifdef __cplusplus
 }
+
 #endif
