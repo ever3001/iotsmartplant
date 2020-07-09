@@ -13,17 +13,19 @@
 #include "driver/gpio.h"
 #include "driver/adc.h"
 
+#include "MQTT.h"
+
 // Led
 #define GPIO_LED_PIN GPIO_NUM_2
 // Pump
-#define GPIO_PUMP_PIN GPIO_NUM_12
+#define GPIO_PUMP_PIN GPIO_NUM_4
 // Mask for the outputs
 #define GPIO_OUTPUT_PIN_SEL_MASK ((1ULL << GPIO_LED_PIN) | (1ULL << GPIO_PUMP_PIN))
 
 
 // Moisture Sensor
-#define MOISTURE_SENSOR_ADC_CHANNEL ADC1_CHANNEL_6
-#define WATER_SENSOR_ADC_CHANNEL ADC1_CHANNEL_7
+#define MOISTURE_SENSOR_ADC_CHANNEL ADC1_CHANNEL_6 // GPIO34
+#define WATER_SENSOR_ADC_CHANNEL ADC1_CHANNEL_7     // GPIO35
 #define ADC_ATTEN ADC_ATTEN_DB_0
 #define NO_OF_SAMPLES 64          //Multisampling
 #define MOISTURE_CHECK_INTERVAL_IN_SEC 3
