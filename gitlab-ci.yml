@@ -1,0 +1,12 @@
+stages:
+  - build
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+project:
+  stage: build
+  image: python:2.7
+  before_script:
+  - "pip install -U platformio"
+  script: "platformio run -e esp32-evb"
