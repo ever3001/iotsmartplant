@@ -25,3 +25,9 @@
 ## 3D Model
 
 TODO:
+
+
+## FreeRTOS Notes
+
+> Using vTaskDelay(x/ portTICK_PERIOD_MS) add more code then using vTaskDelay(pdMS_TO_TICKS(x)).
+> Don't forget to calculate stack for a task when creating a task xTaskCreate(...)
