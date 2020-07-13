@@ -8,6 +8,7 @@
 /** Project Headers */
 #include "ADC_Sensors.h"
 #include "Actuators.h"
+#include "MQTT.h"
 
 
 #define TAG "Main"
@@ -20,7 +21,7 @@ void createTasks()
 
   xReturned = xTaskCreate(gpio_task_example,
                           "GPIO_TASK_EXAMPLE",
-                          1024,
+                          1024*2,
                           (void*)NULL,
                           tskIDLE_PRIORITY,
                           NULL);
@@ -28,14 +29,14 @@ void createTasks()
 
   xReturned = xTaskCreate(moisture_sensor_task,
                           "MOISTURE_SENSOR_TASK",
-                          1024,
+                          1024*3,
                           (void*)NULL,
                           tskIDLE_PRIORITY,
                           NULL);
   if(xReturned == pdPASS) { goto error_xTaskCreate; }
   xReturned = xTaskCreate(water_sensor_task,
                           "WATER_SENSOR_TASK",
-                          1024,
+                          1024*3,
                           (void*)NULL,
                           tskIDLE_PRIORITY,
                           NULL);
@@ -56,7 +57,8 @@ void app_main(void)
   ESP_ERROR_CHECK(nvs_flash_init());
   ESP_ERROR_CHECK(actuators_gpio_init());
   ESP_ERROR_CHECK(init_adc_sensor());
-
+  wifi_init();
+  mqtt_app_start();
   createTasks();
 
   // Start the real time scheduler.
