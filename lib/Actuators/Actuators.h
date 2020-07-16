@@ -27,19 +27,4 @@ esp_err_t actuators_gpio_init()
   return gpio_config(&io_conf);
 }
 
-static void gpio_task_example(void* arg)
-{
-  uint8_t state = 0;
-  for(;;) {
-    state = !state;
-    gpio_set_level(GPIO_LED_PIN, state);
-    gpio_set_level(GPIO_PUMP_PIN, state);
-#ifdef DEBUG
-    ESP_LOGI(ADC_SENSOR_TAG, "[GPIO_TASK_EX] state = %d", state);
-#endif
-    // Delay 1 second
-    vTaskDelay(pdMS_TO_TICKS(1000));
-  }
-  vTaskDelete(NULL);
-}
 #endif /* _ACTUATORS_H_ */

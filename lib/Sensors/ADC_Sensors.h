@@ -3,33 +3,61 @@
 
 #include "driver/adc.h"
 #include "esp_log.h"
+#include "freertos/queue.h"
 
 #define ADC_SENSOR_TAG "ADC_Sensors"
 
 // Moisture Sensor
-#define MOISTURE_SENSOR_ADC_CHANNEL    (ADC1_CHANNEL_6) // GPIO34
-#define WATER_SENSOR_ADC_CHANNEL       (ADC1_CHANNEL_7) // GPIO35
-#define ADC_ATTEN                      (ADC_ATTEN_DB_0) // Attenuation for the ADC
-#define NO_OF_SAMPLES                  (64)             // Multisampling
-#define MOISTURE_CHECK_INTERVAL_IN_SEC (3)
-#define WATER_CHECK_INTERVAL_IN_SEC    (4)
+#define MOISTURE_SENSOR_ADC_CHANNEL      (ADC1_CHANNEL_6) // GPIO34
+#define WATER_SENSOR_ADC_CHANNEL         (ADC1_CHANNEL_7) // GPIO35
+#define ADC_ATTEN                        (ADC_ATTEN_DB_0) // Attenuation for the ADC
+#define NO_OF_SAMPLES                    (64)             // Multisampling
+#define MOISTURE_CHECK_INTERVAL_IN_SEC   (10)
+#define WATER_CHECK_INTERVAL_IN_SEC      (10)
+#define ADC_SENSOR_QUEUE_SEND_TIME_IN_MS (pdMS_TO_TICKS(2000))
 
+#ifdef DEBUG
+static void adc_sensor_test_task(void* arg)
+{
+  for(;;) {
+    printf("ADC_SENSOR_TEST_TASK\n");
+    vTaskDelay(pdMS_TO_TICKS(1000));
+  }
+  vTaskDelete(NULL);
+}
+#endif
 
 static void moisture_sensor_task(void* arg)
 {
+  if(arg == NULL) {
+    /* Queue was not created */
+    ESP_LOGE(ADC_SENSOR_TAG, "[ERROR] xQueueMoistureSensor was not created");
+    // TODO: Handle Error
+    while(1) {}
+  }
+  // Queue to send the information of moisture sensor
+  QueueHandle_t xQueueMoistureSensor = (QueueHandle_t)arg;
+  // Save the value of the raw adc
+  uint32_t adc_reading = 0;
+  // Calculate the task delay
+  const TickType_t xDelay = pdMS_TO_TICKS(MOISTURE_CHECK_INTERVAL_IN_SEC * 1000);
   for(;;) {
-    uint32_t adc_reading = 0;
-    // Calculate the task delay
-    const TickType_t xDelay = pdMS_TO_TICKS(WATER_CHECK_INTERVAL_IN_SEC * 1000);
+    adc_reading = 0;
     // Multisampling
     for(size_t i = 0; i < NO_OF_SAMPLES; ++i) {
       adc_reading += adc1_get_raw(MOISTURE_SENSOR_ADC_CHANNEL);
     }
     adc_reading /= NO_OF_SAMPLES;
 #ifdef DEBUG
-    ESP_LOGI(ADC_SENSOR_TAG, "[MOISTURE_SENSOR] adc read = %d", adc_reading);
+    ESP_LOGI(ADC_SENSOR_TAG, "[MOISTURE_SENSOR] moisture = %d", adc_reading);
 #endif
-    // TODO: Send sensor value to Server
+    // Send sensor value to Queue
+    if(xQueueSendToBack(xQueueMoistureSensor,
+                        &adc_reading,
+                        ADC_SENSOR_QUEUE_SEND_TIME_IN_MS) != pdTRUE) {
+      ESP_LOGE(ADC_SENSOR_TAG,
+               "[MOISTURE_SENSOR][ERROR] sending moisture sensor value in queue");
+    }
     // Block task for time calculated
     vTaskDelay(xDelay);
   }
@@ -38,19 +66,34 @@ static void moisture_sensor_task(void* arg)
 
 static void water_sensor_task(void* arg)
 {
+  if(arg == NULL) {
+    /* Queue was not created */
+    ESP_LOGE(ADC_SENSOR_TAG, "[ERROR] xQueueWaterSensor was not created");
+    // TODO: Handle Error
+    while(1) {}
+  }
+  // Queue to send the information of water sensor
+  QueueHandle_t xQueueWaterSensor = (QueueHandle_t)arg;
+  // Save the value of the raw adc
+  uint32_t adc_reading = 0;
+  // Calculate the task delay
+  const TickType_t xDelay = pdMS_TO_TICKS(WATER_CHECK_INTERVAL_IN_SEC * 1000);
   for(;;) {
-    uint32_t adc_reading = 0;
-    // Calculate the task delay
-    const TickType_t xDelay = pdMS_TO_TICKS(WATER_CHECK_INTERVAL_IN_SEC * 1000);
     // Multisampling
     for(size_t i = 0; i < NO_OF_SAMPLES; ++i) {
       adc_reading += adc1_get_raw(WATER_SENSOR_ADC_CHANNEL);
     }
     adc_reading /= NO_OF_SAMPLES;
 #ifdef DEBUG
-    ESP_LOGI(ADC_SENSOR_TAG, "[WATER_SENSOR] adc read = %d", adc_reading);
+    ESP_LOGI(ADC_SENSOR_TAG, "[WATER_SENSOR] water = %d", adc_reading);
 #endif
-    // TODO: Send sensor value to Server
+    // Send sensor value to Queue
+    if(xQueueSendToBack(xQueueWaterSensor,
+                        &adc_reading,
+                        ADC_SENSOR_QUEUE_SEND_TIME_IN_MS) != pdTRUE) {
+      ESP_LOGE(ADC_SENSOR_TAG,
+               "[WATER_SENSOR][ERROR] sending water sensor value in queue");
+    }
     // Block task for time calculated
     vTaskDelay(xDelay);
   }
@@ -74,6 +117,7 @@ static esp_err_t init_adc_sensor()
 error_01:
 error_02:
 error_03:
+  // TODO: Error handling
   ESP_LOGI(ADC_SENSOR_TAG, "Finish init ADC..");
   ESP_ERROR_CHECK(esp_error);
   return esp_error;
