@@ -174,7 +174,7 @@ static void mqtt_app_start(void)
 {
   ESP_LOGI(MQTT_TAG, "MQTT_APP_START");
   esp_mqtt_client_config_t mqtt_cfg = {
-    .uri = CONFIG_BROKER_URL
+    .uri = CONFIG_BROKER_URL,
     // .user_context = (void *)your_context
   };
   mqtt_cfg.event_handle = (mqtt_event_callback_t)mqtt_event_handler;
@@ -222,14 +222,12 @@ static void mqtt_water_sensor_task(void* arg)
 
         msg_id = esp_mqtt_client_publish(
             client, "/sensor/water-sensor-01", JSONString, 0, 0, 0);
-        ESP_LOGI(MQTT_TAG, "sent publish successful, msg_id=%d", msg_id);
+        ESP_LOGI(MQTT_TAG, "/sensor/water-sensor-01 successful, msg_id=%d", msg_id);
       end:
         cJSON_Delete(JSONToSend);
       }
     } else {
-#ifdef DEBUG
       ESP_LOGI(MQTT_TAG, "[WATER_SENSOR] no lecture");
-#endif
     }
   }
   vTaskDelete(NULL);
@@ -272,14 +270,12 @@ static void mqtt_moisture_sensor_task(void* arg)
 
         msg_id = esp_mqtt_client_publish(
             client, "/sensor/moisture-sensor-01", JSONString, 0, 0, 0);
-        ESP_LOGI(MQTT_TAG, "sent publish successful, msg_id=%d", msg_id);
+        ESP_LOGI(MQTT_TAG, "/sensor/moisture-sensor-01 successful, msg_id=%d", msg_id);
       end:
         cJSON_Delete(JSONToSend);
       }
     } else {
-#ifdef DEBUG
       ESP_LOGI(MQTT_TAG, "[MOISTURE_SENSOR] no lecture");
-#endif
     }
   }
   vTaskDelete(NULL);

@@ -10,8 +10,8 @@
 // Moisture Sensor
 #define MOISTURE_SENSOR_ADC_CHANNEL      (ADC1_CHANNEL_6) // GPIO34
 #define WATER_SENSOR_ADC_CHANNEL         (ADC1_CHANNEL_7) // GPIO35
-#define ADC_ATTEN                        (ADC_ATTEN_DB_0) // Attenuation for the ADC
-#define NO_OF_SAMPLES                    (64)             // Multisampling
+#define ADC_ATTEN                        (ADC_ATTEN_DB_11) // Gives full-scale voltage 3.9 V
+#define NO_OF_SAMPLES                    (64)              // Multisampling
 #define MOISTURE_CHECK_INTERVAL_IN_SEC   (10)
 #define WATER_CHECK_INTERVAL_IN_SEC      (10)
 #define ADC_SENSOR_QUEUE_SEND_TIME_IN_MS (pdMS_TO_TICKS(2000))
@@ -40,7 +40,8 @@ static void moisture_sensor_task(void* arg)
   // Save the value of the raw adc
   uint32_t adc_reading = 0;
   // Calculate the task delay
-  const TickType_t xDelay = pdMS_TO_TICKS(MOISTURE_CHECK_INTERVAL_IN_SEC * 1000);
+  const TickType_t xDelay =
+      pdMS_TO_TICKS(MOISTURE_CHECK_INTERVAL_IN_SEC * 1000);
   for(;;) {
     adc_reading = 0;
     // Multisampling
@@ -55,8 +56,9 @@ static void moisture_sensor_task(void* arg)
     if(xQueueSendToBack(xQueueMoistureSensor,
                         &adc_reading,
                         ADC_SENSOR_QUEUE_SEND_TIME_IN_MS) != pdTRUE) {
-      ESP_LOGE(ADC_SENSOR_TAG,
-               "[MOISTURE_SENSOR][ERROR] sending moisture sensor value in queue");
+      ESP_LOGE(
+          ADC_SENSOR_TAG,
+          "[MOISTURE_SENSOR][ERROR] sending moisture sensor value in queue");
     }
     // Block task for time calculated
     vTaskDelay(xDelay);
@@ -108,10 +110,10 @@ static esp_err_t init_adc_sensor()
   // Initialize ADC1 with a 12 bit resolution
   esp_error = adc1_config_width(ADC_WIDTH_BIT_12);
   if(esp_error != ESP_OK) { goto error_01; }
-  // Initialize the channel 6 without attenuation
+  // Initialize the channel 6 full-scale between 150 to 2450 mV
   esp_error = adc1_config_channel_atten(MOISTURE_SENSOR_ADC_CHANNEL, ADC_ATTEN);
   if(esp_error != ESP_OK) { goto error_02; }
-  // Initialize the channel 7 without attenuation
+  // Initialize the channel 7 full-scale between 150 to 2450 mV
   esp_error = adc1_config_channel_atten(WATER_SENSOR_ADC_CHANNEL, ADC_ATTEN);
   if(esp_error != ESP_OK) { goto error_03; }
 error_01:
