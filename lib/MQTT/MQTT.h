@@ -186,16 +186,16 @@ static void mqtt_app_start(void)
 }
 
 
-static void mqtt_water_sensor_task(void* arg)
+static void mqtt_water_sensor_task(void* pvParameter)
 {
-  if(arg == NULL) {
+  if(pvParameter == NULL) {
     /* Queue was not created */
     ESP_LOGE(MQTT_TAG, "[ERROR] xQueueWaterSensor was not created");
     // TODO: Handle Error
     while(1) {}
   }
   // Queue to send the information of water sensor
-  QueueHandle_t xQueueWaterSensor = (QueueHandle_t)arg;
+  QueueHandle_t xQueueWaterSensor = (QueueHandle_t)pvParameter;
   // Save the value of the raw adc
   uint32_t adc_reading = 0;
   int msg_id;
@@ -222,7 +222,8 @@ static void mqtt_water_sensor_task(void* arg)
 
         msg_id = esp_mqtt_client_publish(
             client, "/sensor/water-sensor-01", JSONString, 0, 0, 0);
-        ESP_LOGI(MQTT_TAG, "/sensor/water-sensor-01 successful, msg_id=%d", msg_id);
+        ESP_LOGI(
+            MQTT_TAG, "/sensor/water-sensor-01 successful, msg_id=%d", msg_id);
       end:
         cJSON_Delete(JSONToSend);
       }
@@ -234,16 +235,16 @@ static void mqtt_water_sensor_task(void* arg)
 }
 
 
-static void mqtt_moisture_sensor_task(void* arg)
+static void mqtt_moisture_sensor_task(void* pvParameter)
 {
-  if(arg == NULL) {
+  if(pvParameter == NULL) {
     /* Queue was not created */
     ESP_LOGE(MQTT_TAG, "[ERROR] xQueueMoistureSensor was not created");
     // TODO: Handle Error
     while(1) {}
   }
   // Queue to send the information of water sensor
-  QueueHandle_t xQueueMoistureSensor = (QueueHandle_t)arg;
+  QueueHandle_t xQueueMoistureSensor = (QueueHandle_t)pvParameter;
   // Save the value of the raw adc
   uint32_t adc_reading = 0;
   int msg_id;
@@ -270,12 +271,64 @@ static void mqtt_moisture_sensor_task(void* arg)
 
         msg_id = esp_mqtt_client_publish(
             client, "/sensor/moisture-sensor-01", JSONString, 0, 0, 0);
-        ESP_LOGI(MQTT_TAG, "/sensor/moisture-sensor-01 successful, msg_id=%d", msg_id);
+        ESP_LOGI(MQTT_TAG,
+                 "/sensor/moisture-sensor-01 successful, msg_id=%d",
+                 msg_id);
       end:
         cJSON_Delete(JSONToSend);
       }
     } else {
       ESP_LOGI(MQTT_TAG, "[MOISTURE_SENSOR] no lecture");
+    }
+  }
+  vTaskDelete(NULL);
+}
+
+
+static void mqtt_hum_temp_sensor_task(void* pvParameter)
+{
+  if(pvParameter == NULL) {
+    /* Queue was not created */
+    ESP_LOGE(MQTT_TAG, "[ERROR] xQueueHumTempSensor was not created");
+    // TODO: Handle Error
+    while(1) {}
+  }
+  // Queue to send the information of water sensor
+  QueueHandle_t xQueueHumTempSensor = (QueueHandle_t)pvParameter;
+  // Save the value of the sensor
+  DHT22_val_t DHT22 = { 0.0, 0.0 };
+  for(;;) {
+    if(xQueueReceive(xQueueHumTempSensor,
+                     &DHT22,
+                     (MOISTURE_CHECK_INTERVAL_IN_SEC + 1) * 1000 /
+                         portTICK_RATE_MS) == pdTRUE) {
+      ESP_LOGI(MQTT_TAG,
+               "[MQTT_HUM_TEMP]Hum: %.1f Tmp: %.1f\n",
+               DHT22.hum,
+               DHT22.temp);
+      // if(client != NULL) {
+      //   cJSON* moistureSensorVal = NULL;
+      //   char* JSONString         = NULL;
+
+      //   cJSON* JSONToSend = cJSON_CreateObject();
+      //   if(JSONToSend == NULL) { goto end; }
+
+      //   moistureSensorVal = cJSON_CreateNumber(adc_reading);
+      //   if(moistureSensorVal == NULL) { goto end; }
+      //   cJSON_AddItemToObject(JSONToSend, "moisture_s", moistureSensorVal);
+
+      //   JSONString = cJSON_Print(JSONToSend);
+
+      //   msg_id = esp_mqtt_client_publish(
+      //       client, "/sensor/moisture-sensor-01", JSONString, 0, 0, 0);
+      //   ESP_LOGI(MQTT_TAG,
+      //            "/sensor/moisture-sensor-01 successful, msg_id=%d",
+      //            msg_id);
+      // end:
+      //   cJSON_Delete(JSONToSend);
+      // }
+    } else {
+      ESP_LOGI(MQTT_TAG, "[MQTT_HUM_TEMP] no lecture");
     }
   }
   vTaskDelete(NULL);

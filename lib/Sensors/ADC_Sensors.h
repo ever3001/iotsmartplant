@@ -4,12 +4,10 @@
 #include "driver/adc.h"
 #include "esp_log.h"
 #include "freertos/queue.h"
+#include "Drivers_Map.h"
 
 #define ADC_SENSOR_TAG "ADC_Sensors"
 
-// Moisture Sensor
-#define MOISTURE_SENSOR_ADC_CHANNEL      (ADC1_CHANNEL_6) // GPIO34
-#define WATER_SENSOR_ADC_CHANNEL         (ADC1_CHANNEL_7) // GPIO35
 #define ADC_ATTEN                        (ADC_ATTEN_DB_11) // Gives full-scale voltage 3.9 V
 #define NO_OF_SAMPLES                    (64)              // Multisampling
 #define MOISTURE_CHECK_INTERVAL_IN_SEC   (10)
@@ -17,7 +15,7 @@
 #define ADC_SENSOR_QUEUE_SEND_TIME_IN_MS (pdMS_TO_TICKS(2000))
 
 #ifdef DEBUG
-static void adc_sensor_test_task(void* arg)
+static void adc_sensor_test_task(void* pvParameter)
 {
   for(;;) {
     printf("ADC_SENSOR_TEST_TASK\n");
@@ -27,16 +25,16 @@ static void adc_sensor_test_task(void* arg)
 }
 #endif
 
-static void moisture_sensor_task(void* arg)
+static void moisture_sensor_task(void* pvParameter)
 {
-  if(arg == NULL) {
+  if(pvParameter == NULL) {
     /* Queue was not created */
     ESP_LOGE(ADC_SENSOR_TAG, "[ERROR] xQueueMoistureSensor was not created");
     // TODO: Handle Error
     while(1) {}
   }
   // Queue to send the information of moisture sensor
-  QueueHandle_t xQueueMoistureSensor = (QueueHandle_t)arg;
+  QueueHandle_t xQueueMoistureSensor = (QueueHandle_t)pvParameter;
   // Save the value of the raw adc
   uint32_t adc_reading = 0;
   // Calculate the task delay
@@ -66,16 +64,16 @@ static void moisture_sensor_task(void* arg)
   vTaskDelete(NULL);
 }
 
-static void water_sensor_task(void* arg)
+static void water_sensor_task(void* pvParameter)
 {
-  if(arg == NULL) {
+  if(pvParameter == NULL) {
     /* Queue was not created */
     ESP_LOGE(ADC_SENSOR_TAG, "[ERROR] xQueueWaterSensor was not created");
     // TODO: Handle Error
     while(1) {}
   }
   // Queue to send the information of water sensor
-  QueueHandle_t xQueueWaterSensor = (QueueHandle_t)arg;
+  QueueHandle_t xQueueWaterSensor = (QueueHandle_t)pvParameter;
   // Save the value of the raw adc
   uint32_t adc_reading = 0;
   // Calculate the task delay
