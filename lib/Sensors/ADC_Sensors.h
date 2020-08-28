@@ -5,6 +5,7 @@
 #include "esp_log.h"
 #include "freertos/queue.h"
 #include "Drivers_Map.h"
+#include "Queues.h"
 
 #define ADC_SENSOR_TAG "ADC_Sensors"
 
@@ -27,14 +28,12 @@ static void adc_sensor_test_task(void* pvParameter)
 
 static void moisture_sensor_task(void* pvParameter)
 {
-  if(pvParameter == NULL) {
+  if(xQueueMoistureSensor == NULL) {
     /* Queue was not created */
     ESP_LOGE(ADC_SENSOR_TAG, "[ERROR] xQueueMoistureSensor was not created");
     // TODO: Handle Error
     while(1) {}
   }
-  // Queue to send the information of moisture sensor
-  QueueHandle_t xQueueMoistureSensor = (QueueHandle_t)pvParameter;
   // Save the value of the raw adc
   uint32_t adc_reading = 0;
   // Calculate the task delay
@@ -66,14 +65,12 @@ static void moisture_sensor_task(void* pvParameter)
 
 static void water_sensor_task(void* pvParameter)
 {
-  if(pvParameter == NULL) {
+  if(xQueueWaterSensor == NULL) {
     /* Queue was not created */
     ESP_LOGE(ADC_SENSOR_TAG, "[ERROR] xQueueWaterSensor was not created");
     // TODO: Handle Error
     while(1) {}
   }
-  // Queue to send the information of water sensor
-  QueueHandle_t xQueueWaterSensor = (QueueHandle_t)pvParameter;
   // Save the value of the raw adc
   uint32_t adc_reading = 0;
   // Calculate the task delay

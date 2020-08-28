@@ -18,13 +18,14 @@
 #include "Actuators.h"
 #include "esp_log.h"
 #include "mqtt_client.h"
+#include "Queues.h"
 
 #include <cJSON.h>
 #include <stdbool.h>
 #include <string.h>
 
-#define CONFIG_WIFI_SSID           "It's here mom"
-#define CONFIG_WIFI_PASSWORD       "asdf1234"
+#define CONFIG_WIFI_SSID           "TP_link_monsh_2_4G"
+#define CONFIG_WIFI_PASSWORD       "Atilano123*"
 #define MQTT_TAG                   "MQTT"
 #define CONFIG_BROKER_URL          "mqtt://broker.hivemq.com:1883"
 #define CONFIG_BROKER_PORT         (1883)
@@ -188,14 +189,12 @@ static void mqtt_app_start(void)
 
 static void mqtt_water_sensor_task(void* pvParameter)
 {
-  if(pvParameter == NULL) {
+  if(xQueueWaterSensor == NULL) {
     /* Queue was not created */
     ESP_LOGE(MQTT_TAG, "[ERROR] xQueueWaterSensor was not created");
     // TODO: Handle Error
     while(1) {}
   }
-  // Queue to send the information of water sensor
-  QueueHandle_t xQueueWaterSensor = (QueueHandle_t)pvParameter;
   // Save the value of the raw adc
   uint32_t adc_reading = 0;
   int msg_id;
@@ -237,14 +236,12 @@ static void mqtt_water_sensor_task(void* pvParameter)
 
 static void mqtt_moisture_sensor_task(void* pvParameter)
 {
-  if(pvParameter == NULL) {
+  if(xQueueMoistureSensor == NULL) {
     /* Queue was not created */
     ESP_LOGE(MQTT_TAG, "[ERROR] xQueueMoistureSensor was not created");
     // TODO: Handle Error
     while(1) {}
   }
-  // Queue to send the information of water sensor
-  QueueHandle_t xQueueMoistureSensor = (QueueHandle_t)pvParameter;
   // Save the value of the raw adc
   uint32_t adc_reading = 0;
   int msg_id;
@@ -287,23 +284,21 @@ static void mqtt_moisture_sensor_task(void* pvParameter)
 
 static void mqtt_hum_temp_sensor_task(void* pvParameter)
 {
-  if(pvParameter == NULL) {
+  if(xQueueHumTempSensor == NULL) {
     /* Queue was not created */
     ESP_LOGE(MQTT_TAG, "[ERROR] xQueueHumTempSensor was not created");
     // TODO: Handle Error
     while(1) {}
   }
-  // Queue to send the information of water sensor
-  QueueHandle_t xQueueHumTempSensor = (QueueHandle_t)pvParameter;
   // Save the value of the sensor
-  DHT22_val_t DHT22 = { 0.0, 0.0 };
+  DHT22_val_t DHT22 = { 0, 0 };
   for(;;) {
     if(xQueueReceive(xQueueHumTempSensor,
                      &DHT22,
                      (MOISTURE_CHECK_INTERVAL_IN_SEC + 1) * 1000 /
                          portTICK_RATE_MS) == pdTRUE) {
       ESP_LOGI(MQTT_TAG,
-               "[MQTT_HUM_TEMP]Hum: %.1f Tmp: %.1f\n",
+               "[MQTT_HUM_TEMP]Hum: %.1d Tmp: %.1d\n",
                DHT22.hum,
                DHT22.temp);
       // if(client != NULL) {
