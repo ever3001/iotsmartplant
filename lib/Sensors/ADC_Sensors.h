@@ -26,76 +26,76 @@ static void adc_sensor_test_task(void* pvParameter)
 }
 #endif
 
-static void moisture_sensor_task(void* pvParameter)
-{
-  if(xQueueMoistureSensor == NULL) {
-    /* Queue was not created */
-    ESP_LOGE(ADC_SENSOR_TAG, "[ERROR] xQueueMoistureSensor was not created");
-    // TODO: Handle Error
-    while(1) {}
-  }
-  // Save the value of the raw adc
-  uint32_t adc_reading = 0;
-  // Calculate the task delay
-  const TickType_t xDelay =
-      pdMS_TO_TICKS(MOISTURE_CHECK_INTERVAL_IN_SEC * 1000);
-  for(;;) {
-    adc_reading = 0;
-    // Multisampling
-    for(size_t i = 0; i < NO_OF_SAMPLES; ++i) {
-      adc_reading += adc1_get_raw(MOISTURE_SENSOR_ADC_CHANNEL);
-    }
-    adc_reading /= NO_OF_SAMPLES;
-#ifdef DEBUG
-    ESP_LOGI(ADC_SENSOR_TAG, "[MOISTURE_SENSOR] moisture = %d", adc_reading);
-#endif
-    // Send sensor value to Queue
-    if(xQueueSendToBack(xQueueMoistureSensor,
-                        &adc_reading,
-                        ADC_SENSOR_QUEUE_SEND_TIME_IN_MS) != pdTRUE) {
-      ESP_LOGE(
-          ADC_SENSOR_TAG,
-          "[MOISTURE_SENSOR][ERROR] sending moisture sensor value in queue");
-    }
-    // Block task for time calculated
-    vTaskDelay(xDelay);
-  }
-  vTaskDelete(NULL);
-}
+// static void moisture_sensor_task(void* pvParameter)
+// {
+//   if(xQueueMoistureSensor == NULL) {
+//     /* Queue was not created */
+//     ESP_LOGE(ADC_SENSOR_TAG, "[ERROR] xQueueMoistureSensor was not created");
+//     // TODO: Handle Error
+//     while(1) {}
+//   }
+//   // Save the value of the raw adc
+//   uint32_t adc_reading = 0;
+//   // Calculate the task delay
+//   const TickType_t xDelay =
+//       pdMS_TO_TICKS(MOISTURE_CHECK_INTERVAL_IN_SEC * 1000);
+//   for(;;) {
+//     adc_reading = 0;
+//     // Multisampling
+//     for(size_t i = 0; i < NO_OF_SAMPLES; ++i) {
+//       adc_reading += adc1_get_raw(MOISTURE_SENSOR_ADC_CHANNEL);
+//     }
+//     adc_reading /= NO_OF_SAMPLES;
+// #ifdef DEBUG
+//     ESP_LOGI(ADC_SENSOR_TAG, "[MOISTURE_SENSOR] moisture = %d", adc_reading);
+// #endif
+//     // Send sensor value to Queue
+//     if(xQueueSendToBack(xQueueMoistureSensor,
+//                         &adc_reading,
+//                         ADC_SENSOR_QUEUE_SEND_TIME_IN_MS) != pdTRUE) {
+//       ESP_LOGE(
+//           ADC_SENSOR_TAG,
+//           "[MOISTURE_SENSOR][ERROR] sending moisture sensor value in queue");
+//     }
+//     // Block task for time calculated
+//     vTaskDelay(xDelay);
+//   }
+//   vTaskDelete(NULL);
+// }
 
-static void water_sensor_task(void* pvParameter)
-{
-  if(xQueueWaterSensor == NULL) {
-    /* Queue was not created */
-    ESP_LOGE(ADC_SENSOR_TAG, "[ERROR] xQueueWaterSensor was not created");
-    // TODO: Handle Error
-    while(1) {}
-  }
-  // Save the value of the raw adc
-  uint32_t adc_reading = 0;
-  // Calculate the task delay
-  const TickType_t xDelay = pdMS_TO_TICKS(WATER_CHECK_INTERVAL_IN_SEC * 1000);
-  for(;;) {
-    // Multisampling
-    for(size_t i = 0; i < NO_OF_SAMPLES; ++i) {
-      adc_reading += adc1_get_raw(WATER_SENSOR_ADC_CHANNEL);
-    }
-    adc_reading /= NO_OF_SAMPLES;
-#ifdef DEBUG
-    ESP_LOGI(ADC_SENSOR_TAG, "[WATER_SENSOR] water = %d", adc_reading);
-#endif
-    // Send sensor value to Queue
-    if(xQueueSendToBack(xQueueWaterSensor,
-                        &adc_reading,
-                        ADC_SENSOR_QUEUE_SEND_TIME_IN_MS) != pdTRUE) {
-      ESP_LOGE(ADC_SENSOR_TAG,
-               "[WATER_SENSOR][ERROR] sending water sensor value in queue");
-    }
-    // Block task for time calculated
-    vTaskDelay(xDelay);
-  }
-  vTaskDelete(NULL);
-}
+// static void water_sensor_task(void* pvParameter)
+// {
+//   if(xQueueWaterSensor == NULL) {
+//     /* Queue was not created */
+//     ESP_LOGE(ADC_SENSOR_TAG, "[ERROR] xQueueWaterSensor was not created");
+//     // TODO: Handle Error
+//     while(1) {}
+//   }
+//   // Save the value of the raw adc
+//   uint32_t adc_reading = 0;
+//   // Calculate the task delay
+//   const TickType_t xDelay = pdMS_TO_TICKS(WATER_CHECK_INTERVAL_IN_SEC * 1000);
+//   for(;;) {
+//     // Multisampling
+//     for(size_t i = 0; i < NO_OF_SAMPLES; ++i) {
+//       adc_reading += adc1_get_raw(WATER_SENSOR_ADC_CHANNEL);
+//     }
+//     adc_reading /= NO_OF_SAMPLES;
+// #ifdef DEBUG
+//     ESP_LOGI(ADC_SENSOR_TAG, "[WATER_SENSOR] water = %d", adc_reading);
+// #endif
+//     // Send sensor value to Queue
+//     if(xQueueSendToBack(xQueueWaterSensor,
+//                         &adc_reading,
+//                         ADC_SENSOR_QUEUE_SEND_TIME_IN_MS) != pdTRUE) {
+//       ESP_LOGE(ADC_SENSOR_TAG,
+//                "[WATER_SENSOR][ERROR] sending water sensor value in queue");
+//     }
+//     // Block task for time calculated
+//     vTaskDelay(xDelay);
+//   }
+//   vTaskDelete(NULL);
+// }
 
 static esp_err_t init_adc_sensor()
 {

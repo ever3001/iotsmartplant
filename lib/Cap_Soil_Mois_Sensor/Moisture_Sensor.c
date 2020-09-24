@@ -57,7 +57,7 @@ void moisture_sensor_task(void* pvParameter)
     }
     adc_reading /= NO_OF_SAMPLES;
     setMoistureVal(adc_reading);
-    ESP_LOGD(TAG, "Moisture Sensor value = %d", getMoistureVal());
+    ESP_LOGI(TAG, "Moisture Sensor value = %d", getMoistureVal());
     // Block task for time calculated
     vTaskDelay(xDelay);
   }
