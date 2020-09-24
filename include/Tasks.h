@@ -4,7 +4,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
-#include "ADC_Sensors.h"
+//#include "ADC_Sensors.h"
+#include "Moisture_Sensor.h"
 #include "Actuators.h"
 #include "DHT22.h"
 #include "MQTT.h"
@@ -28,12 +29,12 @@ static const task_t allTask[] = {
   */
   /*###### SENSOR TASKS */
   { moisture_sensor_task,       "MOISTURE_SENSOR_TASK",           STACK_MIN_SIZE * 4,         NULL,         tskIDLE_PRIORITY },
-  { water_sensor_task,          "WATER_SENSOR_TASK",              STACK_MIN_SIZE * 4,         NULL,         tskIDLE_PRIORITY },
+  //{ water_sensor_task,          "WATER_SENSOR_TASK",              STACK_MIN_SIZE * 4,         NULL,         tskIDLE_PRIORITY },
   { dht22_task,                 "HUMIDITY_TEMP_SENSOR_TASK",      STACK_MIN_SIZE * 4,         NULL,         tskIDLE_PRIORITY },
   /*###### MQTT TASKS*/
-  { mqtt_moisture_sensor_task,  "MQTT_MOISTURE_SENSOR_TASK",      STACK_MIN_SIZE * 3,         NULL,         tskIDLE_PRIORITY },
-  { mqtt_water_sensor_task,     "MQTT_WATER_SENSOR_TASK",         STACK_MIN_SIZE * 3,         NULL,         tskIDLE_PRIORITY },
-  { mqtt_hum_temp_sensor_task,  "MQTT_HUMIDITY_TEMP_SENSOR_TASK", STACK_MIN_SIZE * 3,         NULL,         tskIDLE_PRIORITY }
+  //{ mqtt_moisture_sensor_task,  "MQTT_MOISTURE_SENSOR_TASK",      STACK_MIN_SIZE * 3,         NULL,         tskIDLE_PRIORITY },
+  //{ mqtt_water_sensor_task,     "MQTT_WATER_SENSOR_TASK",         STACK_MIN_SIZE * 3,         NULL,         tskIDLE_PRIORITY },
+  //{ mqtt_hum_temp_sensor_task,  "MQTT_HUMIDITY_TEMP_SENSOR_TASK", STACK_MIN_SIZE * 3,         NULL,         tskIDLE_PRIORITY }
 
 };
 
