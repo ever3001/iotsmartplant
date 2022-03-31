@@ -33,6 +33,11 @@
 
 # PlatformIO
 .pio
+sdkconfig*
 
 # VSCode
 .vscode
+
+# Sphinx
+_build
+public

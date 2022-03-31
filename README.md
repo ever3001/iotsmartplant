@@ -31,3 +31,18 @@ TODO:
 
 > Using vTaskDelay(x/ portTICK_PERIOD_MS) add more code then using vTaskDelay(pdMS_TO_TICKS(x)).
 > Don't forget to calculate stack for a task when creating a task xTaskCreate(...)
+
+
+## Documentation
+
+### Building locally
+
+To work locally with this project, you'll have to follow the steps below:
+
+1. Fork, clone or download this project
+1. [Install][sphinx] Sphinx
+1. Install sphinx-rtd-theme
+1. Generate the documentation: `make`
+
+The generated HTML will be located in the location specified by `conf.py`,
+in this case `_build/html`.

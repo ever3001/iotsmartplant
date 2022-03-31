@@ -1,4 +1,8 @@
+image: python:3.7-alpine
+
 stages:
+  - doc_test
+  - doc_deploy
   - build_debug
   - build_release
 
@@ -7,14 +11,33 @@ variables:
 
 release_project:
   stage: build_release
-  image: python:2.7
   before_script:
   - "pip install -U platformio"
   script: "platformio run -e Release"
 
 debug_project:
   stage: build_debug
-  image: python:2.7
   before_script:
   - "pip install -U platformio"
   script: "platformio run -e Debug"
+
+doc_test:
+  stage: doc_test
+  script:
+  - pip install -U sphinx
+  - pip install sphinx-rtd-theme
+  - sphinx-build -b html . public
+  rules:
+    - if: $CI_COMMIT_REF_NAME != $CI_DEFAULT_BRANCH
+    
+pages:
+  stage: doc_deploy
+  script:
+  - pip install -U sphinx
+  - pip install sphinx-rtd-theme
+  - sphinx-build -b html . public
+  artifacts:
+    paths:
+    - public
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
