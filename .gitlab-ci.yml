@@ -1,25 +1,20 @@
-image: python:3.7-alpine
+image: python:3.9
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.pip-cache"
+  PLATFORMIO_CACHE_DIR: "$CI_PROJECT_DIR/.platformio-cache"
+
+cache:
+  paths:
+    - .pip-cache/
+    - .platformio-cache/
 
 stages:
   - doc_test
   - doc_deploy
-  - build_debug
-  - build_release
-
-variables:
-  GIT_SUBMODULE_STRATEGY: recursive
-
-release_project:
-  stage: build_release
-  before_script:
-  - "pip install -U platformio"
-  script: "platformio run -e Release"
-
-debug_project:
-  stage: build_debug
-  before_script:
-  - "pip install -U platformio"
-  script: "platformio run -e Debug"
+  - build_test
+  - build_all
 
 doc_test:
   stage: doc_test
@@ -41,3 +36,23 @@ pages:
     - public
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+
+build_test:
+  stage: build_test
+  before_script:
+    - "pip install -U platformio"
+  script: "pio run --environment esp32-iotsmartplant-debug"
+
+build_all:
+  stage: build_all
+  before_script:
+    - "pip install -U platformio"
+  script: "platformio run"
+  variables: {PLATFORMIO_CI_SRC: "src"}
+  artifacts:
+    paths:
+    - $CI_PROJECT_DIR/.pio/build/esp32-iotsmartplant-release/firmware.elf
+    - $CI_PROJECT_DIR/.pio/build/esp32-iotsmartplant-release/firmware.bin
+    - $CI_PROJECT_DIR/.pio/build/esp32-iotsmartplant-debug/firmware.elf
+    - $CI_PROJECT_DIR/.pio/build/esp32-iotsmartplant-debug/firmware.bin
+    expire_in: 1 week
