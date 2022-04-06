@@ -1,19 +1,25 @@
 #ifndef _DHT22_H_
 #define _DHT22_H_
-/* Standard Headers */
-#include <stdint.h>
+
+#include "driver/gpio.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
 
 typedef struct {
   int16_t hum;
   int16_t temp;
-} DHT22_val_t;
+} DHT22_t;
 
-int16_t dht22_int16_get_hum();
-int16_t dht22_int16_get_temp();
-float dht22_float_get_hum();
-float dht22_float_get_temp();
-DHT22_val_t dht22_int16_get_hum_temp();
+typedef struct {
+  DHT22_t value;
+  esp_err_t err;
+  SemaphoreHandle_t xSemaphore;
+} DHT22_data_t;
+
+esp_err_t setup_dht22(gpio_config_t* io_conf);
+
+extern DHT22_data_t _DHT22_data;
 
 void dht22_task(void* pvParameter);
 
-#endif /* _DHT22_H_ */
+#endif // _DHT22_H_

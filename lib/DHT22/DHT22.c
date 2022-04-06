@@ -1,60 +1,46 @@
 #include "DHT22.h"
 
-/* Espressif Headers */
-#include "esp_log.h"
-#include "driver/gpio.h"
-/* FreeRTOS Headers */
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
-/* Library Header */
 #include "dht.h"
+#include "esp_log.h"
 
-#define GPIO_DHT22_PIN          (GPIO_NUM_32)
-#define DHT22_CHECK_VAL_IN_SEC  (10)
-#define TAG                     ("DHT22")
+esp_err_t setup_dht22(gpio_config_t* io_conf)
+{
+  ESP_LOGI("[DHT22]", "Setting up DHT22...\r\n");
+  io_conf->pin_bit_mask |= (1ULL << CONFIG_DHT22_PIN);
+  io_conf->mode         = GPIO_MODE_INPUT_OUTPUT;
+  io_conf->pull_up_en   = GPIO_PULLUP_DISABLE;
+  io_conf->pull_down_en = GPIO_PULLDOWN_DISABLE;
+  io_conf->intr_type    = GPIO_INTR_DISABLE;
+  ESP_LOGI("[DHT22]", "DHT22 setup complete\r\n");
+  return gpio_config(io_conf);
+}
 
-// Variable to save the hum and temp
-DHT22_val_t DHT22Val;
-// Type of the sensor used. See the library for more info
-static const dht_sensor_type_t sensor_type = DHT_TYPE_AM2301;
-
-/* Getters */
-int16_t dht22_int16_get_hum()               { return DHT22Val.hum; }
-int16_t dht22_int16_get_temp()              { return DHT22Val.temp; }
-float dht22_float_get_hum()                 { return DHT22Val.hum/10.00; }
-float dht22_float_get_temp()                { return DHT22Val.temp/10.00; }
-DHT22_val_t dht22_int16_get_hum_temp()      { return DHT22Val; }
-
-/* Setters */
-static void dht22_set_hum_val(int16_t val)  { DHT22Val.hum = val; }
-static void dht22_set_temp_val(int16_t val) { DHT22Val.temp = val; }
-static void dht22_set_val(DHT22_val_t val)  { DHT22Val.hum = val.hum; DHT22Val.temp = val.temp; }
-
-/* Task for reading the sensor value each x time */
 void dht22_task(void* pvParameter)
 {
-  // Calculate the task delay
-  const TickType_t xDelay = pdMS_TO_TICKS(DHT22_CHECK_VAL_IN_SEC * 1000);
+  if(_DHT22_data.xSemaphore != NULL) {
+    const TickType_t xDelay             = pdMS_TO_TICKS(CONFIG_DHT22_TASK_TIME_IN_SEC * 1000);
+    const dht_sensor_type_t sensor_type = DHT_TYPE_AM2301;
+    _DHT22_data.value.hum               = 0;
+    _DHT22_data.value.temp              = 0;
+    _DHT22_data.err                     = ESP_FAIL;
+    for(;;) {
+      // save the value
+      xSemaphoreTake(_DHT22_data.xSemaphore, portMAX_DELAY);
+      _DHT22_data.err = dht_read_data(sensor_type, CONFIG_DHT22_PIN, &_DHT22_data.value.hum, &_DHT22_data.value.temp);
+      if(_DHT22_data.err == ESP_OK) {
+        float hum  = _DHT22_data.value.hum / 10.0;
+        float temp = _DHT22_data.value.temp / 10.0;
+        ESP_LOGI("[DHT22]", "Humidity: %.1f%% Temp: %.1fC", hum, temp);
+      } else {
+        ESP_LOGE("[DHT22]", "Could not read data from sensor");
+      }
+      xSemaphoreGive(_DHT22_data.xSemaphore);
 
-  ESP_LOGI(TAG, "Starting DHT22 Task\n\n");
-
-  DHT22_val_t DHT22Buff = { 0, 0 };
-
-  for(;;) {
-    DHT22Buff.hum  = 0;
-    DHT22Buff.temp = 0;
-
-    if(dht_read_data(sensor_type, GPIO_DHT22_PIN, &DHT22Buff.hum, &DHT22Buff.temp) == ESP_OK) {
-      dht22_set_val(DHT22Buff);
-      ESP_LOGI(TAG, "Humidity: %.1f%% Temp: %.1fC", dht22_float_get_hum(), dht22_float_get_temp());
-      // TODO: Possibly notify someone that the temperature was updated
-    } else {
-      ESP_LOGE(TAG, "Could not read data from sensor");
+      //! NOTE: wait at least 2 sec before reading again
+      vTaskDelay(xDelay);
     }
-    
-    // -- wait at least 2 sec before reading again ------------
-    // The interval of whole process must be beyond 2 seconds !!
-    vTaskDelay(xDelay);
+  } else {
+    ESP_LOGE("[DHT22]", "Semaphore not initialized\r\n");
   }
   vTaskDelete(NULL);
 }

@@ -24,6 +24,7 @@ BreakBeforeTernaryOperators: 'false'
 BreakConstructorInitializers: AfterColon
 BreakInheritanceList: BeforeComma
 ConstructorInitializerAllOnOneLineOrOnePerLine: 'true'
+ColumnLimit: 130
 Cpp11BracedListStyle: 'false'
 FixNamespaceComments: 'true'
 IncludeBlocks: Regroup
