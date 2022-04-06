@@ -5,7 +5,6 @@
 #include "lwip/dns.h"
 #include "lwip/netdb.h"
 #include "lwip/sockets.h"
-
 #include "mqtt_client.h"
 
 typedef struct {

@@ -1,14 +1,16 @@
 #include "MQTT.h"
+
 #include "esp_log.h"
 
-esp_err_t setup_mqtt(){
+esp_err_t setup_mqtt()
+{
   esp_err_t esp_error = ESP_FAIL;
   ESP_LOGI("[MQTT]", "Setting up MQTT..\r\n");
   esp_mqtt_client_config_t mqtt_cfg = {
     .uri = CONFIG_MQTT_BROKER_URL,
     // .user_context = (void *)your_context
   };
-  mqtt_cfg.event_handle = (mqtt_event_callback_t)mqtt_event_handler;
+  mqtt_cfg.event_handle           = (mqtt_event_callback_t)mqtt_event_handler;
   esp_mqtt_client_handle_t client = esp_mqtt_client_init(&mqtt_cfg);
   // esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt_event_handler, client);
   esp_error = esp_mqtt_client_start(client);
@@ -42,15 +44,11 @@ esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
       // msg_id = esp_mqtt_client_publish(client, "/topic/qos0", "data", 0, 0,
       // 0); ESP_LOGI("[MQTT]", "sent publish successful, msg_id=%d", msg_id);
       break;
-    case MQTT_EVENT_UNSUBSCRIBED:
-      ESP_LOGI("[MQTT]", "MQTT_EVENT_UNSUBSCRIBED, msg_id=%d", event->msg_id);
-      break;
-    case MQTT_EVENT_PUBLISHED:
-      ESP_LOGI("[MQTT]", "MQTT_EVENT_PUBLISHED, msg_id=%d", event->msg_id);
-      break;
+    case MQTT_EVENT_UNSUBSCRIBED: ESP_LOGI("[MQTT]", "MQTT_EVENT_UNSUBSCRIBED, msg_id=%d", event->msg_id); break;
+    case MQTT_EVENT_PUBLISHED: ESP_LOGI("[MQTT]", "MQTT_EVENT_PUBLISHED, msg_id=%d", event->msg_id); break;
     case MQTT_EVENT_DATA:
-      ESP_LOGI("[MQTT][MQTT_EVENT_DATA]","TOPIC=%.*s\r\n", event->topic_len, event->topic);
-      ESP_LOGI("[MQTT][MQTT_EVENT_DATA]","DATA=%.*s\r\n", event->data_len, event->data);
+      ESP_LOGI("[MQTT][MQTT_EVENT_DATA]", "TOPIC=%.*s\r\n", event->topic_len, event->topic);
+      ESP_LOGI("[MQTT][MQTT_EVENT_DATA]", "DATA=%.*s\r\n", event->data_len, event->data);
       break;
     case MQTT_EVENT_ERROR: ESP_LOGI("[MQTT]", "MQTT_EVENT_ERROR"); break;
     default: ESP_LOGI("[MQTT]", "Other event id:%d", event->event_id); break;

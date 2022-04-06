@@ -1,9 +1,9 @@
 #ifndef _MOISTURE_SENSOR_H_
 #define _MOISTURE_SENSOR_H_
 
+#include "driver/adc.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
-#include "driver/adc.h"
 
 typedef struct {
   uint32_t value;

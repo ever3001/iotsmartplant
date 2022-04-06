@@ -1,4 +1,5 @@
 #include "WiFi.h"
+
 #include "esp_log.h"
 
 static EventGroupHandle_t wifi_event_group;
@@ -9,9 +10,7 @@ static esp_err_t wifi_event_handler(void* ctx, system_event_t* event)
 {
   switch(event->event_id) {
     case SYSTEM_EVENT_STA_START: esp_wifi_connect(); break;
-    case SYSTEM_EVENT_STA_GOT_IP:
-      xEventGroupSetBits(wifi_event_group, CONNECTED_BIT);
-      break;
+    case SYSTEM_EVENT_STA_GOT_IP: xEventGroupSetBits(wifi_event_group, CONNECTED_BIT); break;
     case SYSTEM_EVENT_STA_DISCONNECTED:
       esp_wifi_connect();
       xEventGroupClearBits(wifi_event_group, CONNECTED_BIT);
@@ -22,15 +21,16 @@ static esp_err_t wifi_event_handler(void* ctx, system_event_t* event)
 }
 
 
-esp_err_t setup_wifi(){
+esp_err_t setup_wifi()
+{
   esp_err_t esp_error = ESP_FAIL;
   ESP_LOGI("[WIFI]", "Setting up WIFI..\r\n");
   tcpip_adapter_init();
   wifi_event_group = xEventGroupCreate();
-  esp_error = esp_event_loop_init(wifi_event_handler, NULL);
+  esp_error        = esp_event_loop_init(wifi_event_handler, NULL);
   if(esp_error != ESP_OK) { goto error; }
   wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-  esp_error = esp_wifi_init(&cfg);
+  esp_error              = esp_wifi_init(&cfg);
   if(esp_error != ESP_OK) { goto error; }
   esp_error = esp_wifi_set_storage(WIFI_STORAGE_RAM);
   if(esp_error != ESP_OK) { goto error; }

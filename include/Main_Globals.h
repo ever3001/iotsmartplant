@@ -3,30 +3,26 @@
 
 #include "DHT22.h"
 #include "Led.h"
-#include "Pump.h"
-#include "Moisture_Sensor.h"
-#include "Tasks.h"
-#include "Water_Sensor.h"
 #include "MQTT.h"
+#include "MQTT_DHT22.h"
 #include "MQTT_Moisture_Sensor.h"
 #include "MQTT_Water_Sensor.h"
-#include "MQTT_DHT22.h"
+#include "Moisture_Sensor.h"
+#include "Pump.h"
+#include "Tasks.h"
+#include "Water_Sensor.h"
 
-#define STACK_MIN_SIZE  (1024)
+#define STACK_MIN_SIZE (1024)
 
-gpio_config_t _io_conf                        = { 0 };
-moisture_sensor_data_t _moisture_sensor_data  = { 0 };
-water_sensor_data_t _water_sensor_data        = { 0 };
-DHT22_data_t _DHT22_data                      = { 0 };
-MQTT_t _mqtt                                  = {
-  .xSemaphore = NULL,
-  .client = NULL,
-  .connected = false
-};
+gpio_config_t _io_conf                       = { 0 };
+moisture_sensor_data_t _moisture_sensor_data = { 0 };
+water_sensor_data_t _water_sensor_data       = { 0 };
+DHT22_data_t _DHT22_data                     = { 0 };
+MQTT_t _mqtt = { .xSemaphore = NULL, .client = NULL, .connected = false };
 
 const char* mqtt_moisture_sensor_subscribe_topic = "/sensor/moisture-sensor-01";
-const char* mqtt_water_sensor_subscribe_topic = "/sensor/water-sensor-01";
-const char* mqtt_dht22_subscribe_topic = "/sensor/dht22-01";
+const char* mqtt_water_sensor_subscribe_topic    = "/sensor/water-sensor-01";
+const char* mqtt_dht22_subscribe_topic           = "/sensor/dht22-01";
 
 const Task_t _allTasks[] = {
   /*

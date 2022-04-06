@@ -10,8 +10,8 @@
 #include "MQTT.h"
 #include "Moisture_Sensor.h"
 #include "Pump.h"
-#include "Tasks.h"
 #include "Semaphores.h"
+#include "Tasks.h"
 #include "Water_Sensor.h"
 #include "WiFi.h"
 /*** External Libraries ***/

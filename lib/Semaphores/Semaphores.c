@@ -1,11 +1,13 @@
 #include "Semaphores.h"
-#include "esp_log.h"
-#include "Moisture_Sensor.h"
-#include "Water_Sensor.h"
+
 #include "DHT22.h"
 #include "MQTT.h"
+#include "Moisture_Sensor.h"
+#include "Water_Sensor.h"
+#include "esp_log.h"
 
-esp_err_t setup_semaphores(){
+esp_err_t setup_semaphores()
+{
   esp_err_t err = ESP_FAIL;
   ESP_LOGI("[SEMAPHORES]", "Setting up semaphores...\r\n");
   _moisture_sensor_data.xSemaphore = xSemaphoreCreateMutex();

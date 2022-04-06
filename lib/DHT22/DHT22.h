@@ -1,9 +1,9 @@
 #ifndef _DHT22_H_
 #define _DHT22_H_
 
+#include "driver/gpio.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
-#include "driver/gpio.h"
 
 typedef struct {
   int16_t hum;
@@ -16,7 +16,7 @@ typedef struct {
   SemaphoreHandle_t xSemaphore;
 } DHT22_data_t;
 
-esp_err_t setup_dht22(gpio_config_t * io_conf);
+esp_err_t setup_dht22(gpio_config_t* io_conf);
 
 extern DHT22_data_t _DHT22_data;
 

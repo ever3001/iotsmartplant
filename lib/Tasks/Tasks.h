@@ -13,6 +13,6 @@ typedef struct {
 } Task_t;
 
 
-esp_err_t setup_tasks(const Task_t * allTasks, size_t taskCount);
+esp_err_t setup_tasks(const Task_t* allTasks, size_t taskCount);
 
 #endif // _TASKS_H_
